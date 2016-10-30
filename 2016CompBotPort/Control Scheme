@@ -1,0 +1,196 @@
+20-Aug-2016
+For additional tuning:
+- make PuncherArm loggable
+- update web pages to graph PuncherArm
+	- also graph the generated profile
+	- check what position of last profile point is vs target position (i.e. is the profile getting us all the way to target?)
+		- can push last position to SmartDashboard
+		
+Testing to do:
+
+4) confirm that disabling and re-enabling is safe (e.g. transition from auto to teleop)
+	a) with winder homing in progress, disable and re-enable;  shooter should resume and complete homing, and end 
+	up enabled (able to shoot)
+	b) with re-cock sequence in progress, disable and re-enable;  shooter should resume and complete sequence, and 
+	end up able to shoot	 
+	c) with arm homing in progress, disable.  Should see abort message on console
+		1) upon re-enabling, arm should stay disabled and wait to operator to re-initiate homing
+	d) with arm MP in progress, disable
+		1) upon re-enabling, arm should stay in current position and you should be able to move as normal (profile
+		should handle current position)
+
+Vision Calibration 6/11/16
+{28.370,-43},{30.359,-43.5},{31.616,-46},{34.966,-47},{39.572,-48},{42.084,-49},{45.539,-50},{50.355,-55},{54.333,-55},{58.102,-62}
+
+	TargetAngleINFOV 28.370,  manualArmAngle -43.000,  Arm Position -44.985
+		(On the defense distance = 12ft 3.5in)
+	TargetAngleINFOV 30.359,  manualArmAngle -43.500,  Arm Position -45.320
+		(Outer Works Shot distance = 11ft 1in)
+	TargetAngleINFOV 31.616, manualArmAngle -46.000, Arm Position -47.998
+		(distance = 10ft 6in)
+	TargetAngleINFOV 34.966, manualArmAngle -47.000, Arm Position -48.896
+		(distance = 9ft 4in)
+	TargetAngleINFOV 39.572, manualArmAngle -48.000, Arm Position -47.832
+		(distance = 8ft 5in)
+	TargetAngleINFOV 42.084, manualArmAngle -49.000, Arm Position -50.580
+		(distance = 7ft 8in)
+	TargetAngleINFOV 45.539, manualArmAngle -50.000, Arm Position -51.899
+		(distance = 7ft 1in)
+	TargetAngleINFOV 50.355, manualArmAngle -55.000, Arm Position -56.902
+		(distance = 5ft 11in)
+	TargetAngleINFOV 54.333, manualArmAngle -55.000, Arm Position -56.902
+		(distance = 5ft 3in)
+	TargetAngleINFOV 58.102, manualArmAngle -62.000, Arm Position -61.273
+		(distance = 4ft 4in)
+		
+CompBot 2016 Control Scheme
+
+Driver Controls
+	self-explanatory
+		- left stick Y axis is forward/reverse, right stick X axis is left/right turn
+	right stick button is shift
+		- code defaults to high gear (solenoid set to true on init) 
+	start button is auton mode select
+	Button A is auto-turn
+	Button B is auto-turn with WPILib PIDController
+	Button Y is rotate arm to manualArmAngle from SmartDashboard
+		
+Operator Controls follow MikeyBear's Dream Control Scheme 
+
+	Right Trigger: 	Shoot and re-cock shooter 
+		- controller will rumble if you try to shoot and claw isn't opened
+
+	Left Trigger:	Lock the arm (interrupt any running MP, and engage lock)
+
+	Left and Right Bumpers - Rollers in and out
+
+  	DPad Up:  	arm highest position (-66.535)
+  	DPad Left: 	arm courtyard shot position (-45.69)
+  	DPad Right:	arm outerworks shot position (-43)
+  	DPad Down:	arm fully down (0) 
+
+	Button A:	aim arm per vision tracking
+	Button B:	Toggle Claw open/closed
+	Button X:	arm position 4 (slightly off floor)
+	Button Y:   manual arm unlock
+	
+	Start button:  press and hold to execute shooter homing procedure....
+		- needs to be run if robot booted with shooter not fully cocked
+		- only runs if shooter's not enabled
+		- if you release the start button before the shooter reaches home, it'll abort and you have to re-run
+	
+	Back button:  press to execute arm homing procedure
+			
+Maintenance Controls (Test Mode)
+
+	Right Bumper (6) - tighten winder (motor spins reverse/negative voltage; encoder position decreases)
+	Left Bumper (5) - loosen winder (motor spins forward/positive voltage; encoder position increases)
+
+	Left Trigger (axis 2) - lock the puncher 
+	Right Trigger (axis 3) - shoot the puncher 
+
+	Button A (1) - lower the arm 5 degrees
+	Button Y (4) - lift the arm 5 degrees
+
+	Button B (2) - Toggle claw open/close
+	
+TODO:
+1) handle loss of winder encoder position when moving up to grab; the following may work
+	- current position less than prior, we've lost position....jump to step 3 in sequence which stops, grabs, and runs shooter back to home
+	position.  From there operator may need to shoot to re-cock if we weren't far enough forward to grab when we jumped to step 3
+
+2) handle interrupting current arm profile and starting another one
+	a) in Robot, remove check for isArmWaiting() from dpad conditions
+	b) update ArmPositioningThread (checkAndRotateArm(), lockArm()) to handle interruption
+		- will need to add steps to state machine
+		- lockArm()
+			- if arm is currently moving, stop & clear profile, and engage brake once MP is clear (talon disabled)
+			- if arm isn't moving, engage brake 
+		
+3) (due to the above 2 changes where we're interrupting state machines, implement states as AtomicInteger to avoid
+concurrency issues....do this for RobovikingSRXProfileDriver as well)
+	a) RobovikingSRXProfileDriver
+		
+4) vibrate oController if operator runs rollers but claw is open
+
+5) increase arm speed
+	 
+Arm Positioning:
+	Talon encoder provides count of cim motor revs, forward >0, reverse <0
+		encoder is reversed, so must use CANTalon.reverseSensor(true) to keep encoder and motor in phase
+		(i.e. postive voltage causes position to increase, negative voltage cause position to decrease)
+
+	Forward (postive) voltage cause gearbox output to spin counter-clockwise when you look at it head on; or in other words
+		if you're looking at a side view with the cim to the left and the shaft to the right, forward means shaft spins towards you
+	
+	Motor is mounted on left of arm and attached via an addition gear, so therefore:
+		Forward (positive) voltage will rotate arm towards front of robot (down) 
+		Reverse (negative) voltage will rotate arm towards rear of robot  (up)
+		
+	350 cim revs equates to 360deg of arm travel:  i.e. deg/rev = 360/350
+	so, to travel Xdeg, number of revs required is ((350 * Xdeg) / 360)
+
+	let currentArmPos = rotations up from 0 (bottom);  is therefore always <= 0 when arm is not "home"
+		- remember, running motor in reverse raises the arm, forward lowers the arm
+
+	if we have a set of known positions (in # of negative rotations), we
+	can generate a profile to take us from current position to selected target
+	- e.g. start at 0, rotate to position -47 (move arm up)
+		- total distance is -47 (-(current - target))
+	
+	- start at position -47, rotate to position -20 (move arm down)
+		- total distance is 27 = (-(current - target)) 
+		= (-(-47 -(-20))) 
+		= -(-47 + 20) 
+		= -(-27)
+		= 27
+		
+	- start at position -20, rotate to position -47 (move arm up)
+		= -(-20 -(-47))
+		= -(-20 + 47)
+		= -(27)
+
+	- start at position 0, rotate to position -47 (move arm up)
+		= -(0 - (-47))
+		= -(47)
+
+	- start at position -47, rotate to position 0 (move arm down)
+		= -(-47 - 0)
+		= -(-47)
+		
+	arm start-up:
+		- if photoeye is true, that means the arm is not fully down;  arm position control needs to stay disabled
+		
+	an example for converting from a vision angle: given that forward motor travel rotates arm towards front, measure like a protractor:  
+		Consider 90deg as straight up, 180 as flat pointing out the front of the robot, and 0 as flat pointing out the rear
+		of the robot 	
+		Have vision targeting report target angle between 90 and 180;  e.g. subtract triangulated aim angle from 180
+		
+	To calculate degrees to travel to change aim:
+		subtract current angle from target angle, and travel that far in that direction
+	
+	For example:
+		current angle is 90deg, target angle is 110deg (70deg elevation pointing out front of robot)
+			travelDegrees = 110 - 90 = 20deg
+		current angle is 110, target angle is 70deg (70deg elevation pointing out back of robot)
+			travelDegrees = 70 - 110 = -40deg  
+	
+	soft limits in Talon don't provide for reliable protection when used with MPE:
+		- if position is relative and is reset on each profile, obviously the limits would never be
+		triggered
+		- if using absolute position and not resetting on each profile, the MPE seems to go wonky 
+		when a limit is tripped
+			- with limit fault tripped, the next profile in the opposite direction doesn't run; need
+			to send it twice
+			- there's no way in Java to poll the fault, the WPI methods currently return JNI exceptions
+			which crashes the robot code
+
+	see about detecting stall to protect against lowering too far (hitting frame / floor)
+		
+	42 degrees is the optimal angle for shooting into the high goal from the edge of the outer works
+	
+	
+	
+	
+	 	
+	
