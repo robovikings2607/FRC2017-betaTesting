@@ -4,9 +4,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.usfirst.frc.team2607.robot.SRXProfileDriver.PeriodicRunnable;
 
-import edu.wpi.first.wpilibj.CANTalon;
+import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.CANTalon.TalonControlMode;
+import com.ctre.CANTalon.TalonControlMode;
 
 // this will consist of 2 threads
 //		1) the main thread runs the state machine like SRXProfileDriver.control() would, just doesn't need to be called from

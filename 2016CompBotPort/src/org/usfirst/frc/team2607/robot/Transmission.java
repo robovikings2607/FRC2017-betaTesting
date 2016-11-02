@@ -3,8 +3,8 @@ package org.usfirst.frc.team2607.robot;
 import com.team254.lib.trajectory.Trajectory.Segment;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
-import edu.wpi.first.wpilibj.CANTalon;
-import edu.wpi.first.wpilibj.CANTalon.TalonControlMode;
+import com.ctre.CANTalon;
+import com.ctre.CANTalon.TalonControlMode;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.SpeedController;
@@ -126,12 +126,7 @@ public class Transmission implements SpeedController {
 			return -0.0;
 		}
 	}
-
-	@Override
-	public void set(double speed, byte syncGroup) {
-		set(speed);
-	}
-
+	
 	@Override
 	public void set(double s) {
 		if(invertedFlag) {

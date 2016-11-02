@@ -1,7 +1,7 @@
 package org.usfirst.frc.team2607.robot;
 import java.util.ArrayList;
 
-import edu.wpi.first.wpilibj.CANTalon;
+import com.ctre.CANTalon;
 
 public class SRXProfile {
 		
