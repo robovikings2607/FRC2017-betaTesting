@@ -86,7 +86,7 @@ public class RobovikingStick extends Joystick {
 	 * @return
 	 */
 	 public boolean getToggleButton(int buttonNumber) { 
-	 	int btn = buttonNumber - 1; 
+	 	int btn = buttonNumber - 1;
 	 	if (getButtonPressedOneShot(buttonNumber)) buttonStates[btn] = !buttonStates[btn]; 
 	 	return buttonStates[btn]; 
 	 } 
