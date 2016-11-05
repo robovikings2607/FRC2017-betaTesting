@@ -1,5 +1,7 @@
 package org.archwood.frc2607.newRookieBot;
 
+import org.archwood.frc2607.newRookieBot.auto.AutonomousEngine;
+
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -12,10 +14,16 @@ public class RobotMain extends IterativeRobot {
 	Talon Left2 ;
 	Talon Right1 ;
 	Talon Right2 ;
-	Solenoid shifter;
+	Talon intakeRollers ;
+	public Solenoid shifter;
+	public Solenoid intakePiston;
 	Compressor compressor ;
 	RobovikingStick DriveStick ;
-	RobotDrive DriveTrain ;
+	public RobotDrive DriveTrain ;
+	
+	AutonomousEngine autoEngine;
+	Thread autoThread = null;
+	boolean autonModeRan;
 	
 @Override
 	public void robotInit() {
@@ -23,16 +31,33 @@ public class RobotMain extends IterativeRobot {
 		Left2 = new Talon(Constants.leftMotor2) ;
 		Right1 = new Talon(Constants.rightMotor1) ;
 		Right2 = new Talon(Constants.rightMotor2) ;
+		intakeRollers = new Talon(Constants.rollersMotor);
 		shifter = new Solenoid(Constants.shifter) ;
+		intakePiston = new Solenoid(Constants.clawSolenoid);
 		compressor = new Compressor();
 		DriveStick = new RobovikingStick(Constants.driveController) ;
 		DriveTrain = new RobotDrive(Left1, Left2, Right1, Right2) ;
-		shifter.set(false);
 		compressor.start();
+		
+		autoEngine = new AutonomousEngine(this);
+		autoEngine.loadSavedMode();
+		autonModeRan = false;
+		autoSwitch = true;
 	}
+
 	@Override
 	public void teleopPeriodic() {
 		shifter.set(DriveStick.getToggleButton(RobovikingStick.xBoxButtonA)) ;
+		intakePiston.set(DriveStick.getToggleButton(RobovikingStick.xBoxButtonY)) ;
+		
+		if(DriveStick.getRawButton(RobovikingStick.xBoxLeftBumper)) {
+			intakeRollers.set(0.9);
+		} else if(DriveStick.getRawButton(RobovikingStick.xBoxRightBumper)) {
+			intakeRollers.set(-0.9);
+		} else {
+			intakeRollers.set(0.0);
+		}
+		
 		DriveTrain.arcadeDrive(DriveStick.getRawAxisWithDeadzone(RobovikingStick.xBoxLeftStickY), DriveStick.getRawAxisWithDeadzone(RobovikingStick.xBoxRightStickX));
 /*
 		System.out.println("Left Stick: " + DriveStick.getRawButton(RobovikingStick.xBoxButtonLeftStick) 
@@ -47,34 +72,62 @@ public class RobotMain extends IterativeRobot {
 	
 	int autoCounter ;
 	double autoTime ;
+	boolean autoSwitch;
 	
+	
+	@Override
+	public void disabledPeriodic() {
+		if(DriveStick.getButtonPressedOneShot(RobovikingStick.xBoxButtonStart)) {
+			//autoEngine.selectMode();
+			autoSwitch = true;
+		}
+		if(DriveStick.getButtonPressedOneShot(RobovikingStick.xBoxButtonBack)) {
+			autoSwitch = false;
+		}
+	}
+	/*
+	@Override
+	public void autonomousInit() {
+		autoThread = new Thread(autoEngine);
+		autoThread.start();
+		
+		autonModeRan = true;
+	}
+
+	@Override
+	public void autonomousPeriodic() {
+
+    	if (autonModeRan) {
+
+    		autonModeRan = false;
+
+    		if (autoThread != null) {
+
+    			if (autoThread.isAlive()) { 
+    				System.out.println("autoThread alive, interrupting");
+    				autoThread.interrupt();
+    			} else {System.out.println("autoThread not alive");}
+    		}
+    	}
+	}
+	*/
 	@Override
 	public void autonomousInit() {
 		autoCounter = 0;
 		autoTime = 0;
 	}
-
+	
 	@Override
 	public void autonomousPeriodic() {
-		
-		if(autoTime < 3.3) {
-			DriveTrain.arcadeDrive(0.50 , 0.0);
+		if(autoSwitch){
+			
+			if(autoTime < 5.0) {
+				shifter.set(true);
+				DriveTrain.arcadeDrive(-0.85 , 0.0);
+			} else {
+				DriveTrain.arcadeDrive(0.0, 0.0);
+			}
 		}
-		
-		if(autoTime > 3.3 && autoTime < 6.6) {
-			DriveTrain.arcadeDrive(-1.0 , 0.0);
-		}
-		
-		if(autoTime > 6.6 && autoTime < 9.9) {
-			DriveTrain.arcadeDrive(0.50 , 0.0);
-		}
-		if(autoTime > 9.9) {
-			DriveTrain.arcadeDrive(0.0, 0.0);
-		}
-		
-		System.out.println(autoTime);
-		autoTime = autoCounter++ / 50.0 ;
-		
+		autoTime = autoCounter++ / 50.0;
 	}
-
 }
