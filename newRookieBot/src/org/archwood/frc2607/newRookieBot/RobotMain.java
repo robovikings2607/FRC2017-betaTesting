@@ -18,7 +18,7 @@ public class RobotMain extends IterativeRobot {
 	public Solenoid shifter;
 	public Solenoid intakePiston;
 	Compressor compressor ;
-	RobovikingStick DriveStick ;
+	RobovikingStick DriveStick , OpStick;
 	public RobotDrive DriveTrain ;
 	
 	AutonomousEngine autoEngine;
@@ -36,7 +36,9 @@ public class RobotMain extends IterativeRobot {
 		intakePiston = new Solenoid(Constants.clawSolenoid);
 		compressor = new Compressor();
 		DriveStick = new RobovikingStick(Constants.driveController) ;
+		OpStick = new RobovikingStick(Constants.operatorController) ;
 		DriveTrain = new RobotDrive(Left1, Left2, Right1, Right2) ;
+		DriveTrain.setSafetyEnabled(false);
 		compressor.start();
 		
 		autoEngine = new AutonomousEngine(this);
@@ -48,11 +50,11 @@ public class RobotMain extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		shifter.set(DriveStick.getToggleButton(RobovikingStick.xBoxButtonA)) ;
-		intakePiston.set(DriveStick.getToggleButton(RobovikingStick.xBoxButtonY)) ;
+		intakePiston.set(OpStick.getToggleButton(RobovikingStick.xBoxButtonY)) ;
 		
-		if(DriveStick.getRawButton(RobovikingStick.xBoxLeftBumper)) {
+		if(OpStick.getRawButton(RobovikingStick.xBoxLeftBumper)) {
 			intakeRollers.set(0.9);
-		} else if(DriveStick.getRawButton(RobovikingStick.xBoxRightBumper)) {
+		} else if(OpStick.getRawButton(RobovikingStick.xBoxRightBumper)) {
 			intakeRollers.set(-0.9);
 		} else {
 			intakeRollers.set(0.0);
@@ -74,30 +76,23 @@ public class RobotMain extends IterativeRobot {
 	double autoTime ;
 	boolean autoSwitch;
 	
-	
+	@Override
+	public void disabledInit() {
+		//DriveTrain.setSafetyEnabled(true);
+	}
+
 	@Override
 	public void disabledPeriodic() {
+		
+		intakePiston.set(false);
 		if(DriveStick.getButtonPressedOneShot(RobovikingStick.xBoxButtonStart)) {
-			//autoEngine.selectMode();
+			autoEngine.selectMode();
 			autoSwitch = true;
 		}
 		if(DriveStick.getButtonPressedOneShot(RobovikingStick.xBoxButtonBack)) {
 			autoSwitch = false;
 		}
-	}
-	/*
-	@Override
-	public void autonomousInit() {
-		autoThread = new Thread(autoEngine);
-		autoThread.start();
-		
-		autonModeRan = true;
-	}
-
-	@Override
-	public void autonomousPeriodic() {
-
-    	if (autonModeRan) {
+		if (autonModeRan) {
 
     		autonModeRan = false;
 
@@ -110,7 +105,22 @@ public class RobotMain extends IterativeRobot {
     		}
     	}
 	}
-	*/
+	
+	@Override
+	public void autonomousInit() {
+		//DriveTrain.setSafetyEnabled(false);
+		autoThread = new Thread(autoEngine);
+		autoThread.start();
+		
+		autonModeRan = true;
+	}
+
+	@Override
+	public void autonomousPeriodic() {
+
+	}
+	
+	/*
 	@Override
 	public void autonomousInit() {
 		autoCounter = 0;
@@ -121,13 +131,14 @@ public class RobotMain extends IterativeRobot {
 	public void autonomousPeriodic() {
 		if(autoSwitch){
 			
-			if(autoTime < 5.0) {
+			if(autoTime < 6.5) {
 				shifter.set(true);
-				DriveTrain.arcadeDrive(-0.85 , 0.0);
+				DriveTrain.arcadeDrive(-0.95 , 0.0);
 			} else {
 				DriveTrain.arcadeDrive(0.0, 0.0);
 			}
 		}
 		autoTime = autoCounter++ / 50.0;
 	}
+	*/
 }

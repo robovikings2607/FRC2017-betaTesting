@@ -17,7 +17,7 @@ abstract public class AutonomousMode {
 		robot = r;
 	}
 	
-	AutonomousMode(){
+	AutonomousMode() {
 		
 	}
 	

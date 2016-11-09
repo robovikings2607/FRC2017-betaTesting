@@ -60,9 +60,9 @@ public class AutonomousManager {
 		@Override
 		public void run() {
 			robot.shifter.set(true);
-			//try { Thread.sleep(1000); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
-			robot.DriveTrain.arcadeDrive(0.75, 0.0);
-			try { Thread.sleep(4500); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
+			try { Thread.sleep(1000); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
+			robot.DriveTrain.arcadeDrive(-0.95, 0.0);
+			try { Thread.sleep(6500); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
 			robot.DriveTrain.arcadeDrive(0.0, 0.0);
 		}
 
@@ -84,15 +84,15 @@ public class AutonomousManager {
 			robot.intakePiston.set(true);
 			robot.shifter.set(true);
 			try { Thread.sleep(1000); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
-			robot.DriveTrain.arcadeDrive(0.45, 0.0);
-			try { Thread.sleep(6000); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
+			robot.DriveTrain.arcadeDrive(0.95, 0.0);
+			try { Thread.sleep(6500); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
 			robot.DriveTrain.arcadeDrive(0.0, 0.0);
 		}
 
 		@Override
 		public String getName() {
 			// TODO Auto-generated method stub
-			return "CrossDefense";
+			return "CrossLowBar";
 		}
 		
 	}
