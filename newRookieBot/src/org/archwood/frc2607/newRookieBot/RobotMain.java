@@ -3,6 +3,7 @@ package org.archwood.frc2607.newRookieBot;
 import org.archwood.frc2607.newRookieBot.auto.AutonomousEngine;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -25,7 +26,9 @@ public class RobotMain extends IterativeRobot {
 	Thread autoThread = null;
 	boolean autonModeRan;
 	
-@Override
+	DriverStation ds = DriverStation.getInstance();
+	
+	@Override
 	public void robotInit() {
 		Left1 = new Talon(Constants.leftMotor1) ;
 		Left2 = new Talon(Constants.leftMotor2) ;
@@ -46,7 +49,24 @@ public class RobotMain extends IterativeRobot {
 		autonModeRan = false;
 		autoSwitch = true;
 	}
-
+	int rpCounter;
+/*
+	@Override
+	public void robotPeriodic() {
+		
+		if(rpCounter++ > 25){
+			for(int i = 1 ; i <= ds.getStickButtonCount(0) ; i++){
+				System.out.print( i + ":");
+				System.out.print(DriveStick.getRawButton(i) ? "T" : "F");
+				System.out.print(" ");
+			}
+			System.out.println(" HAL buttons: " + ds.getStickButtons(0));
+			System.out.println("");
+	
+			rpCounter = 0;
+		}
+	}
+*/
 	@Override
 	public void teleopPeriodic() {
 		shifter.set(DriveStick.getToggleButton(RobovikingStick.xBoxButtonA)) ;
