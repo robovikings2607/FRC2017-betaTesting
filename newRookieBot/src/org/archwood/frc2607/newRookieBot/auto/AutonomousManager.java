@@ -59,10 +59,10 @@ public class AutonomousManager {
 		}
 		@Override
 		public void run() {
-			robot.shifter.set(true);
+			robot.shifter.set(false);
 			try { Thread.sleep(1000); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
-			robot.DriveTrain.arcadeDrive(-0.95, 0.0);
-			try { Thread.sleep(6500); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
+			robot.DriveTrain.arcadeDrive(-0.8, 0.0);
+			try { Thread.sleep(4000); } catch (Exception e) { robot.DriveTrain.arcadeDrive(0,0); return; }
 			robot.DriveTrain.arcadeDrive(0.0, 0.0);
 		}
 

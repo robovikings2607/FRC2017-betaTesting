@@ -2,6 +2,8 @@ package org.archwood.frc2607.newRookieBot;
 
 import org.archwood.frc2607.newRookieBot.auto.AutonomousEngine;
 
+import com.ctre.CANTalon;
+
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -21,6 +23,7 @@ public class RobotMain extends IterativeRobot {
 	Compressor compressor ;
 	RobovikingStick DriveStick , OpStick;
 	public RobotDrive DriveTrain ;
+	CANTalon testMotor;
 	
 	AutonomousEngine autoEngine;
 	Thread autoThread = null;
@@ -48,9 +51,11 @@ public class RobotMain extends IterativeRobot {
 		autoEngine.loadSavedMode();
 		autonModeRan = false;
 		autoSwitch = true;
+		
+		testMotor = new CANTalon(7);
 	}
 	int rpCounter;
-/*
+
 	@Override
 	public void robotPeriodic() {
 		
@@ -66,7 +71,7 @@ public class RobotMain extends IterativeRobot {
 			rpCounter = 0;
 		}
 	}
-*/
+
 	@Override
 	public void teleopPeriodic() {
 		shifter.set(DriveStick.getToggleButton(RobovikingStick.xBoxButtonA)) ;
